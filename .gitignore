@@ -1,5 +1,7 @@
 **/*idea
 **/*proj
 **/data
+**/.empty
 **/.ipynb_checkpoints
+**/*.ipynb
 **/*.zip
