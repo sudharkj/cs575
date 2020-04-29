@@ -5,3 +5,8 @@
 **/.ipynb_checkpoints
 **/*.ipynb
 **/*.zip
+**/*.aux
+**/*.log
+**/*.pdf
+**/*.gz
+**/submission
