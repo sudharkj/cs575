@@ -1,0 +1,87 @@
+\documentclass[notitlepage]{report}
+
+\usepackage{graphicx}
+\usepackage{titling}
+\usepackage{pgfplotstable}
+\usepackage{longtable}
+
+\setlength{\droptitle}{-10em}
+
+\title{Vectorized Array Multiplication/Reduction\\ using SSE}
+\author{Sudha Ravi Kumar Javvadi}
+
+\begin{document}
+	\maketitle
+	
+	\paragraph{Introduction}
+	\paragraph{} This report documents an attempt to test array multiplication/reduction using SIMD and non-SIMD. First a simple comparison between SIMD and non-SIMD is presented without using multicore environment. Later, speedups are compared in multicore environments.
+	
+	\paragraph{Machine Details}
+	\begin{itemize}
+		\item{OS}: Ubuntu 18.04.04 LTS
+		\item{Memory}: 15.5 GB
+		\item{Processor}: Intel Core i5-9600K CPU @ 3.70GHz x 6
+		\item{Graphics}: GeForce RTX 2070 SUPER/PCIe/SSE2
+		\item{GNOME}: 3.28.2
+		\item{OS type}: 64-bit
+		\item{Disk}: 225.4 GB
+	\end{itemize}
+
+	\paragraph{Results}
+	\paragraph{}
+	\pgfplotstableset{
+		begin table=\begin{longtable},
+			end table=\end{longtable},
+	}
+	\pgfplotstabletypeset[
+		col sep=comma,
+		string type,
+		columns/size/.style={column name=Size, column type={|c|}},
+		columns/performance/.style={column name=Performance, column type={c}},
+		columns/speedup/.style={column name=Speedup, column type={c|}},
+		every head row/.style={before row={
+				\caption{Table showing speedups with SIMD over non-SIMD}
+				\label{tab:base}\\
+				\hline},
+			after row=\hline},
+		every last row/.style={after row=\hline},
+	]{../data/simulation.csv}
+	An attempt to explain the above simulation result is done with the help of following graph.
+	\begin{figure}[h!]
+		\includegraphics [width=\linewidth] {../data/simulation.png}
+		\caption{Graph showing speedups with SIMD over non-SIMD}
+		\label{fig:base}
+	\end{figure}
+	\paragraph{} The graph showed there is atleast double the speedup with SIMD over non-SIMD code. But, somehow the speedup do not generalize for large arrays.
+	
+	\paragraph{Extra Credit}
+	\paragraph{}
+	\pgfplotstableset{
+		begin table=\begin{longtable},
+			end table=\end{longtable},
+	}
+	\pgfplotstabletypeset[
+	col sep=comma,
+	string type,
+	columns/type/.style={column name=Type, column type={|l|}},
+	columns/size/.style={column name=Size, column type={c}},
+	columns/performance/.style={column name=Performance, column type={c}},
+	columns/speedup/.style={column name=Speedup, column type={c|}},
+	every head row/.style={before row={
+			\caption{Table showing speedups with SIMD and cores over non-SIMD}
+			\label{tab:ext}\\
+			\hline},
+		after row=\hline},
+	every last row/.style={after row=\hline},
+	]{../data/extra.csv}
+	An attempt to explain the above simulation result is done with the help of following graph.
+	\begin{figure}[h!]
+		\includegraphics [width=\linewidth] {../data/extra.png}
+		\caption{Graph showing speedups with SIMD and cores over non-SIMD}
+		\label{fig:ext}
+	\end{figure}
+	\paragraph{} The graph showed that the speedup with SIMD with cores over non-SIMD is better compared to SIMD alone. But, somehow the speedup did not generalize for large arrays like earlier even with mutlicore environment.
+	
+	\paragraph{Code}
+	\paragraph{} Unzip the file and run $./start.sh$ in the project folder to see the results and also populate the report.
+\end{document}
