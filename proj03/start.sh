@@ -19,5 +19,6 @@ python analyze_results.py
 cd ../latex || exit
 # generate report
 pdflatex -jobname=Functional\ Decomposition report.tex
+pdflatex -jobname=Functional\ Decomposition report.tex
 # remove generated files
-rm *.aux *.log *.gz
+rm -f *.aux *.log *.gz

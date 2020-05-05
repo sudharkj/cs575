@@ -3,6 +3,8 @@
 \usepackage{graphicx}
 \usepackage{titling}
 \usepackage{pgfplotstable}
+\pgfplotsset{compat=1.15}
+
 \usepackage{longtable}
 
 \setlength{\droptitle}{-10em}
@@ -11,16 +13,14 @@
 \author{Sudha Ravi Kumar Javvadi}
 \begin{document}
 	\maketitle
-	%\thispagestyle{empty}
 	\paragraph{Introduction}
 	\paragraph{} This report documents an attempt to use parallelism for programming convenience. A month-by-month simulation was created in which each agent of the simulation will execute in its own thread where it just has to look at the state of the world around it and react to it. The simulation involves four agents.
 	\begin{itemize}
-		\item{Deer} consumes grains. A new deer enters the environment every month if every deer present so far can get grain. A deer leaves the group every time this is not possible in the herd.
+		\item{Deer} consumes grains. A new deer enters the environment every month if every deer present so far can get grain, otherwise one deer leaves the herd.
 		\item{Grain} grows based on the environment state and the number of humans available for farming in the environment.
-		\item{Humans \textbf{(My Agent)}} feed on grains. They sells one deer each by the end of the year if available. Every time the entire group is able to sell a deer or is able to feed themselves a new human enters the environment. Every time either of the above is not possible a human leaves the environment.
-		\item{Watcher} prints the current state, increases the month and so the year (when applicable), and updates the environment state based on the new month number.
+		\item{Humans \textbf{(My Agent)}} feed on grains. They sells one deer each by the end of the year if available. Every time the entire group is able to sell a deer or is able to feed themselves a new human enters the environment. Every time either of the above is not possible a human leaves the environment. But, every year the lower limit on the number of humans is set to 2.
+		\item{Watcher} prints the current state, increases the month, updates year, and updates the environment state based on the new month number.
 	\end{itemize}
-	Further explanation on how each agent interacts with the other is given in the results section.
 	\paragraph{Machine Details}
 	\begin{itemize}
 		\item{OS}: Ubuntu 18.04.04 LTS
@@ -31,7 +31,8 @@
 		\item{OS type}: 64-bit
 		\item{Disk}: 225.4 GB
 	\end{itemize}
-
+	\clearpage
+	
 	\paragraph{Results}
 	\paragraph{}
 	\pgfplotstableset{
@@ -42,34 +43,38 @@
 		col sep=comma,
 		string type,
 		columns/Month/.style={column name=Months, column type={|c|}},
+		columns/Temperature/.style={column name=Temperature ($^\circ$C), column type={c}},
 		columns/Precipitation/.style={column name=Precipitation (cm), column type={c}},
-		columns/Temperature/.style={column name=Temperature ($^\circ$F), column type={c}},
-		columns/Height/.style={column name=Height (cm), column type={c}},
 		columns/Deers/.style={column name=Deers, column type={c}},
+		columns/Height/.style={column name=Height (cm), column type={c}},
 		columns/Humans/.style={column name=Humans, column type={c|}},
 		every head row/.style={before row={
 				\caption{Table showing simulation data}
-				\label{tab:sim}\\
+				\label{tab:sim-table}\\
 				\hline},
 			after row=\hline},
 		every last row/.style={after row=\hline},
 	]{../data/simulation.csv}
-	An attempt to explain the above simulation result is done with the help of following graph.
-	\paragraph{Notes} Following conversions are made to have a better picture of the graph.
+	An attempt to the simulation in table \ref{tab:sim-table} result is done with the help of a graph below.
+	\paragraph{Notes}
 	\begin{itemize}
-		\item Temperature is shown in Fahrenheit
-		\item Precipitation is shown in centimeters
-		\item Height is shown in centimeters
+		\item Temperature is shown in Celsius to decrease the height of temperature in graph
+		\item Precipitation and grain-height are shown in centimeters to increase their height in the graph
+		\item Different results can be seen for each simulation because the seed is initialized with unix timestamp with each run, thus showing the randomness in the simulation.
 	\end{itemize}
-	\begin{figure}[h!]
+	\begin{figure}[!ht]
 		\includegraphics [width=\linewidth] {../data/simulation.png}
 		\caption{Graph showing the simulation results}
-		\label{fig-sim}
+		\label{fig:sim-graph}
 	\end{figure}
 	\paragraph{}
-	Figure \ref{fig-sim} shows that as the temperature and precipitation increased, the grain height also increased. This shows that the rise in temperature and precipitation is good for grain. It can also be also be observed that as the grain increased, number of deer also increased, showing that the deer are welcomed seeing others getting good food. The graph shows that as the grain height decrease, the number of deer decrease.
-	\paragraph{} The graph also showed that as the number of humans increased the rate of farming increased and the so in the deer count. Whenever the deer count is more at the end of year, then the deer count decrease which shows that the agent is in fact having an impact on the existing agents of the environment.
+	Figure \ref{fig:sim-graph} shows that as the temperature and precipitation increased, the grain height also increased. This shows that the rise in temperature and precipitation is good for grain. As the precipitation decrease, there is a decrease in grain. There is no grain when the temperature and precipitation is decreasing showing that grain don't grow during the decrease in both the parameters.
+	\paragraph{}
+	It can also be observed in figure \ref{fig:sim-graph} that as the grain height increased, number of deer also increased, showing that the deer are welcomed seeing others getting good food. But, as the grain height decreased, the number of deer decreased.
+	\paragraph{}
+	Lastly, the graph in figure \ref{fig:sim-graph} showed that the rate of increase in grain height is more and rate of decrease in grain height is less when the number of humans increase, showing the impact of humans farming and thus on grain height. Also, there is a steep decline in the number of deer at the end of every year showing that humans are infact having an impact on the number of deer when they are available. This shows that the agent is infact having an impact on both the existing agents, i.e., deer and grain.
 	
 	\paragraph{Code}
-	\paragraph{} Unzip the file and run $./start.sh$ in the project folder to see the results and also populate the report.
+	\paragraph{} Please unzip the file and run $./start.sh$ in the project folder to see the results and also populate the report.
+	\paragraph{} Also, all the other details on structure of the code can be found in \textit{README.md} in the project folder.
 \end{document}
