@@ -8,7 +8,6 @@
 #include <xmmintrin.h>
 
 #define SSE_WIDTH 4
-
 #define NUM_TRIES 10
 
 // how many tries to discover the maximum performance:
@@ -55,10 +54,10 @@ float SimdMulSum(float *a, float *b, int len) {
 }
 
 int main() {
-#ifndef _OPENMP
+    #ifndef _OPENMP
     fprintf(stderr, "No OpenMP support!\n");
     return 1;
-#endif
+    #endif
 
     for (int i = 0; i < ARRAYSIZE; ++i) {
         A[i] = 1.;
@@ -66,41 +65,40 @@ int main() {
     }
 
     float sum = 0;
-#if USECORE
-    omp_set_num_threads( USECORE );	// same as # of sections
-#endif
+    #if USECORE
+    omp_set_num_threads(USECORE);	// same as # of sections
+    #endif
 
     double maxMegaMultsPerSecond = 0.;
     for (int t = 0; t < NUM_TRIES; t++) {
         sum = 0.;
         double time0, time1;
+
         time0 = omp_get_wtime();
-#if USECORE && USESIMD
-#pragma omp parallel default(none) shared(A, B) reduction(+:sum)
+        #if USECORE && USESIMD
+        #pragma omp parallel default(none) shared(A, B) reduction(+:sum)
         {
             int first = omp_get_thread_num( ) * NUM_ELEMENTS_PER_CORE;
-            sum += SimdMulSum( &A[first], &B[first], NUM_ELEMENTS_PER_CORE );
+            sum += SimdMulSum(&A[first], &B[first], NUM_ELEMENTS_PER_CORE);
         }
-#elif USESIMD
-        sum = SimdMulSum( A, B, ARRAYSIZE );
-#elif USECORE
-#pragma omp parallel for default(none) shared(A, B) reduction(+:sum)
-        for( int i = 0; i < ARRAYSIZE; i += 1 )
-        {
+        #elif USESIMD
+        sum = SimdMulSum(A, B, ARRAYSIZE);
+        #elif USECORE
+        #pragma omp parallel for default(none) shared(A, B) reduction(+:sum)
+        for(int i = 0; i < ARRAYSIZE; i += 1) {
             sum += A[i] * B[i];
         }
-#else
+        #else
         for (int i = 0; i < ARRAYSIZE; i += 1) {
             sum += A[i] * B[i];
         }
-#endif
+        #endif
         time1 = omp_get_wtime();
 
         double megaMultsPerSecond = (float) ARRAYSIZE / (time1 - time0) / 1000000.;
         if (megaMultsPerSecond > maxMegaMultsPerSecond)
             maxMegaMultsPerSecond = megaMultsPerSecond;
-    }       // implied barrier -- all functions must return in order
-    // to allow any of them to get past here
+    }
     printf("%d,%d,%d,%.2lf,%.2lf\n", USESIMD, USECORE, ARRAYSIZE, sum, maxMegaMultsPerSecond);
 
     return 0;

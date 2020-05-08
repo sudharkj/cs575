@@ -3,6 +3,7 @@
 \usepackage{graphicx}
 \usepackage{titling}
 \usepackage{pgfplotstable}
+\pgfplotsset{compat=1.15}
 \usepackage{longtable}
 
 \setlength{\droptitle}{-10em}
@@ -46,13 +47,13 @@
 			after row=\hline},
 		every last row/.style={after row=\hline},
 	]{../data/simulation.csv}
-	An attempt to explain the above simulation result is done with the help of following graph.
-	\begin{figure}[h!]
+	An attempt to explain the simulation result in table \ref{tab:base} is done with the help of following graph in figure \ref{fig:base}.
+	\begin{figure}[!ht]
 		\includegraphics [width=\linewidth] {../data/simulation.png}
 		\caption{Graph showing speedups with SIMD over non-SIMD}
 		\label{fig:base}
 	\end{figure}
-	\paragraph{} The graph showed there is atleast double the speedup with SIMD over non-SIMD code. But, somehow the speedup do not generalize for large arrays.
+	\paragraph{} Figure \ref{fig:base} showed that there is at least double the speedup with SIMD over non-SIMD code. But, somehow the speedup do not generalize for large arrays. The graph shows that the speedup increases around till 256KB and then decreases but is almost comparable after 2MB. So, till around 2MB no consistent pattern is observed but after that the pattern might be somewhat less unstable. Given that the intrinsics have a tighter coupling to the setting up of the registers, a smaller setup time might have made the small dataset size speedup look better. This does align with what was explained in the class about intrinsics.
 	
 	\paragraph{Extra Credit}
 	\paragraph{}
@@ -74,14 +75,15 @@
 		after row=\hline},
 	every last row/.style={after row=\hline},
 	]{../data/extra.csv}
-	An attempt to explain the above simulation result is done with the help of following graph.
-	\begin{figure}[h!]
+	An attempt to explain the simulation result in table \ref{tab:ext} is done with the help of following graph in figure \ref{fig:ext}.
+	\begin{figure}[!ht]
 		\includegraphics [width=\linewidth] {../data/extra.png}
 		\caption{Graph showing speedups with SIMD and cores over non-SIMD}
 		\label{fig:ext}
 	\end{figure}
-	\paragraph{} The graph showed that the speedup with SIMD with cores over non-SIMD is better compared to SIMD alone. But, somehow the speedup did not generalize for large arrays like earlier even with mutlicore environment.
+	\paragraph{} Figure \ref{fig:ext} that the speedup with SIMD with cores over non-SIMD is better compared to SIMD alone. But, somehow the speedup did not generalize for large arrays like earlier even with mutlicore environment. The speedup is especially better for SIMD + 4 cores and SIMD + 8 cores on an Intel i5 6-core processor. But, all the different type of combinations follow similar pattern of very high speedups for smaller array sizes than the larger array sizes, which was explained for the SIMD alone part of the report.
 	
 	\paragraph{Code}
-	\paragraph{} Unzip the file and run $./start.sh$ in the project folder to see the results and also populate the report.
+	\paragraph{} Please unzip the file and run $./start.sh$ in the project folder to see the results and also populate the report.
+	\paragraph{} Also, all the other details on structure of the code can be found in \textit{README.md} in the project folder.
 \end{document}
