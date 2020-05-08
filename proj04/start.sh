@@ -13,7 +13,10 @@ echo "simd,core,size,sum,performance" >data/results.csv
 # go to source
 cd src || exit
 # run the simulations
-for SIZE in 250000 500000 750000 1000000 1250000 1500000 1750000 2000000 2250000; do
+for POW in {10..23}; do
+  # calculate array size
+  SIZE=$((2**POW))
+
   # simple loop
   make --always-make all ARRAYSIZE="${SIZE}"
   ./proj >>../data/results.csv
@@ -39,8 +42,9 @@ python analyze_results.py
 
 # move to report directory
 cd ../latex || exit
-rm *.pdf
+rm -f *.pdf
 # generate report
 pdflatex -jobname=Vectorized\ Operations report.tex
+pdflatex -jobname=Vectorized\ Operations report.tex
 # remove generated files
-rm *.aux *.log *.gz
+rm -f *.aux *.log *.gz
