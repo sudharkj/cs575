@@ -1,0 +1,154 @@
+\documentclass[notitlepage]{report}
+
+\usepackage{graphicx}
+\usepackage{titling}
+\usepackage{pgfplotstable}
+\pgfplotsset{compat=1.15}
+\usepackage{longtable}
+\usepackage{IEEEtrantools}
+
+\setlength{\droptitle}{-10em}
+
+\title{OpenCL Array Multiply, Multiply-Add, and Multiply-Reduce}
+\author{Sudha Ravi Kumar Javvadi}
+
+\begin{document}
+	\maketitle
+	
+	\paragraph{Introduction}
+	\paragraph{} In this project element-wise product is computed using OpenCL and the simulation is explained with the help of graphs. The report documents this attempt when run on a GPU.
+	
+	\paragraph{Machine Details}
+	\begin{itemize}
+		\item{OS}: Ubuntu 18.04.04 LTS
+		\item{Memory}: 15.5 GB
+		\item{Processor}: Intel Core i5-9600K CPU @ 3.70GHz x 6
+		\item{Graphics}: GeForce RTX 2070 SUPER/PCIe/SSE2
+		\item{GNOME}: 3.28.2
+		\item{OS type}: 64-bit
+		\item{Disk}: 225.4 GB
+		\item{CUDA}: 10.2
+	\end{itemize}
+
+	\paragraph{OpenCL Array Multiply}
+	\paragraph{} Multiply two arrays together using OpenCL:
+	\begin{IEEEeqnarray*}{rCl}
+		D[gid] & = & A[gid] * B[gid]
+	\end{IEEEeqnarray*}
+	\paragraph{} Performance results are shown in table \ref{tab:multiply} and later explained in figure \ref{fig:multiply-global} and figure \ref{fig:multiply-local}.
+	\pgfplotstableset{
+		begin table=\begin{longtable},
+			end table=\end{longtable},
+	}
+	\pgfplotstabletypeset[
+	col sep=comma,
+	string type,
+	columns/performance/.style={column name=, column type={|c|}},
+	columns/32/.style={column name=32, column type={c}},
+	columns/64/.style={column name=64, column type={c}},
+	columns/128/.style={column name=128, column type={c}},
+	columns/256/.style={column name=256, column type={c|}},
+	every head row/.style={before row={
+			\caption{Table showing performance of OpenCL Array Multiply}
+			\label{tab:multiply}\\
+			\hline},
+		after row=\hline},
+	every last row/.style={after row=\hline},
+	]{../data/multiply-simulation.csv}
+	\begin{figure}[!ht]
+		\includegraphics [width=\linewidth] {../data/multiply-global.png}
+		\caption{Performance of OpenCL Array Multiply}
+		\label{fig:multiply-global}
+	\end{figure}
+	\paragraph{} Figure \ref{fig:multiply-global} plots Performance vs Local Work Size for different array sizes. It can be observed that the GPU has better performance when the array size is increased which could be because of less occupancy with lower array sizes. It is also observed that performance remains almost the same with increasing local work size unless for large array sizes. GPUs are observed to perform better at specific capacities. This might be the reason why there is a slight decrease in performance for large array sizes with increase in work size because of greater occupancy. This is further explained with figure \ref{fig:multiply-local}.
+	\begin{figure}[!ht]
+		\includegraphics [width=\linewidth] {../data/multiply-local.png}
+		\caption{Performance of OpenCL Array Multiply}
+		\label{fig:multiply-local}
+	\end{figure}
+	\paragraph{} Figure \ref{fig:multiply-local} plots Performance vs Array Size for different Local Work Sizes. It can be observed that there is increase in performance with increase in array size as explained in the previous paragraph. We can also observe a slight dip in the performance for around 128K array size. This could probably be because of false sharing at that occupancy.
+	
+	\paragraph{OpenCL Array Multiply-Add}
+	\paragraph{} Multiply two arrays together and add a third using OpenCL: 
+	\begin{IEEEeqnarray*}{rCl}
+	D[gid] & = & (A[gid] * B[gid]) + C[gid]
+	\end{IEEEeqnarray*}
+	\paragraph{} Performance results are shown in table \ref{tab:add} and later explained in figure \ref{fig:add-global} and figure \ref{fig:add-local}.
+	\pgfplotstableset{
+		begin table=\begin{longtable},
+			end table=\end{longtable},
+	}
+	\pgfplotstabletypeset[
+	col sep=comma,
+	string type,
+	columns/performance/.style={column name=, column type={|c|}},
+	columns/32/.style={column name=32, column type={c}},
+	columns/64/.style={column name=64, column type={c}},
+	columns/128/.style={column name=128, column type={c}},
+	columns/256/.style={column name=256, column type={c|}},
+	every head row/.style={before row={
+			\caption{Table showing performance of OpenCL Array Multiply-Add}
+			\label{tab:add}\\
+			\hline},
+		after row=\hline},
+	every last row/.style={after row=\hline},
+	]{../data/add-simulation.csv}
+	\begin{figure}[!ht]
+		\includegraphics [width=\linewidth] {../data/add-global.png}
+		\caption{Performance of OpenCL Array Multiply-Add}
+		\label{fig:add-global}
+	\end{figure}
+	\paragraph{} Figure \ref{fig:add-global} plots Performance vs Local Work Size for different array sizes. It can be observed that the performance graphs vary similar to the Multiply as in figure \ref{fig:multiply-global} but with lower peak performance which could be because of addition operation in the task. This might be because of the additional array $C$ in the GPU memory used to perform element-wise addition and increasing the capacity. Another thing to be noted is the performance here is computed for size of the resultant array and not the total size of the inputs. This might explain that the performance computed is not wrt to the operations performed and so the lower performance. This is further explain in figure \ref{fig:add-local}.
+	\begin{figure}[!ht]
+		\includegraphics [width=\linewidth] {../data/add-local.png}
+		\caption{Performance of OpenCL Array Multiply-Add}
+		\label{fig:add-local}
+	\end{figure}
+	\paragraph{} Figure \ref{fig:add-local} plots Performance vs Array Size for different Local Work Sizes. It can be observed that the performance curve shown patterns as explained in the previous paragraph. The plot is similar to one in figure \ref{fig:multiply-local} except the lower performance with 32 local work size at higher array sizes. This could mean that OpenCL might work better at a higher local work size with large datasets for independent element-wise operations. Also, here the dip is at 256K array size instead of 128K array size in figure \ref{fig:multiply-local}.
+	
+	\paragraph{OpenCL Array Multiply-Reduce}
+	\paragraph{} Perform the same array multiply as in first exercise, but this time with a reduction: 
+	\begin{IEEEeqnarray*}{rCl}
+	Sum & = & summation\{A[:] * B[:]\}
+	\end{IEEEeqnarray*}
+	\pgfplotstableset{
+		begin table=\begin{longtable},
+			end table=\end{longtable},
+	}
+	\paragraph{} Performance results are shown in table \ref{tab:reduce} and later explained in figure \ref{fig:reduce-global} and figure \ref{fig:reduce-local}.
+	\newline
+	\newline
+	\newline
+	\pgfplotstabletypeset[
+	col sep=comma,
+	string type,
+	columns/performance/.style={column name=, column type={|c|}},
+	columns/32/.style={column name=32, column type={c}},
+	columns/64/.style={column name=64, column type={c}},
+	columns/128/.style={column name=128, column type={c}},
+	columns/256/.style={column name=256, column type={c|}},
+	every head row/.style={before row={
+			\caption{Table showing performance of OpenCL Array Multiply-Reduce}
+			\label{tab:reduce}\\
+			\hline},
+		after row=\hline},
+	every last row/.style={after row=\hline},
+	]{../data/reduce-simulation.csv}
+	\begin{figure}[!ht]
+		\includegraphics [width=\linewidth] {../data/reduce-global.png}
+		\caption{Performance of OpenCL Array Multiply-Reduce}
+		\label{fig:reduce-global}
+	\end{figure}
+	\paragraph{} Figure \ref{fig:reduce-global} plots Performance vs Local Work Size for different array sizes. It can be observed that performance decreases gradually for larger arrays with increase in local work size. This could probably be because of longer wait times for computation of binary tree kind of summation with higher local work size.
+	\begin{figure}[!ht]
+		\includegraphics [width=\linewidth] {../data/reduce-local.png}
+		\caption{Performance of OpenCL Array Multiply-Reduce}
+		\label{fig:reduce-local}
+	\end{figure}
+	\paragraph{} Figure \ref{fig:reduce-local} plots Performance vs Array Size for different Local Work Sizes. This shows a better view of the simulation results. There is a performance dip for 128K array size similar to the plot in figure \ref{fig:multiply-local}. We can also observe that there is performance improvement with increase in array size for same local work size, but the rate of increase is more for lower work sizes. This might be able to explain better that the wait times for dependent computations (as explained in the previous paragraph) is lower for low work sizes and so the better performance.
+	\paragraph{} This is in one sense contradictory to the conclusion arrived in second exercise but that is because of different type of computations involved. Second exercise involved element-wise computations independent of any other element in the same array. Whereas the third exercise involved dependent computations, i.e., summation of computed element-wise multiplication or dot product of two arrays. So, higher work sizes with at-most 256 are better for independent computations and lower work sizes with at-least 32 are better for dependent computations.
+	
+	\paragraph{Code}
+	\paragraph{} Please unzip the file and run $./start.sh$ in the project folder to see the results and also populate the report.
+	\paragraph{} Also, all the other details on structure of the code can be found in \textit{README.md} in the project folder.
+\end{document}
