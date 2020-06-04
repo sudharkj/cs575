@@ -1,0 +1,134 @@
+\documentclass[notitlepage]{report}
+
+\usepackage{graphicx}
+\usepackage{titling}
+\usepackage{pgfplotstable}
+\pgfplotsset{compat=1.15}
+\usepackage{longtable}
+\usepackage{IEEEtrantools}
+
+\setlength{\droptitle}{-10em}
+
+\pgfplotstableset{
+	begin table=\begin{longtable},
+		end table=\end{longtable},
+}
+
+\title{Autocorrelation using CPU OpenMP, CPU SIMD, and GPU {OpenCL or CUDA}}
+\author{Sudha Ravi Kumar Javvadi}
+
+\begin{document}
+	\maketitle
+	
+	\paragraph{Introduction}
+	\paragraph{} In this project a pattern in the given signal is detected using autocorrelation. The report documents this attempt to do autocorrelation and finding a pattern hidden in the signal using CPU OpenMP, CPU SIMD, and GPU OpenCL.
+	
+	\paragraph{Machine Details}
+	\begin{itemize}
+		\item{OS}: Ubuntu 18.04.04 LTS
+		\item{Memory}: 15.5 GB
+		\item{Processor}: Intel Core i5-9600K CPU @ 3.70GHz x 6
+		\item{Graphics}: GeForce RTX 2070 SUPER/PCIe/SSE2
+		\item{GNOME}: 3.28.2
+		\item{OS type}: 64-bit
+		\item{Disk}: 225.4 GB
+		\item{CUDA}: 10.2
+	\end{itemize}
+
+	\paragraph{Autocorrelation Results}
+	\paragraph{} Given signal is taken as an array. Dot product of the array and it's shifted version is computed as shown below.
+	\begin{IEEEeqnarray*}{rCl}
+	sum[shift] & = & a[0] * a[shift] + a[1] * a[shift+1] + \ldots + a[size-1] * a[shift-1]
+	\end{IEEEeqnarray*}
+	where,
+	\begin{itemize}
+		\item $a$ is an array containing sampled values of the signal
+		\item $size$ is length of the array
+		\item $shift$ is the circular rotation or shift in the array that is to be dotted with
+		\item $sum$ is the dot product value of the arrays
+	\end{itemize}
+	These dot products were computed using various approaches as explained in the later part of the report. They are then plotted against various shifts in a scatter plot.
+	\begin{figure}[!ht]
+		\includegraphics [width=\linewidth] {../data/sine-wave.png}
+		\caption{Autocorrelation detects a sine-wave in the signal}
+		\label{fig:sine}
+	\end{figure}
+	\paragraph{} Figure \ref{fig:sine} shows that a sine wave is detected in the input signal. A careful observation shows that the wave repeats after every 160 shifts. For example, 160 to 320 can be treated as one sine wave because those are the consecutive locations of peaks in one cycle. In other words, \textbf{period of the detected sine wave in the given signal is 160 shifts}.
+	\paragraph{NOTE:}
+	\begin{itemize}
+		\item Different approaches were used to compare the performances. Given that all of them calculate the same dot products, sine wave observed is exactly the same. So, only one sine wave was shown in the report.
+		\item Also, $sum[0]$ is not shown because it has a huge value compared to other values and the pattern is not visible when including it.
+	\end{itemize}
+	
+	\paragraph{Performance Comparison}
+	\paragraph{} Only the required approaches' performance results are shown in table \ref{tab:comparison}. Parameters for these approaches are chosen based on all the approaches used as shown in \textit{Overall Performance Results} section.
+	\pgfplotstabletypeset[
+	col sep=comma,
+	string type,
+	columns/Approach/.style={column name=Approach, column type={|c|}},
+	columns/Performance/.style={column name=Performance (Giga-Mults/Sec), column type={c|}},
+	every head row/.style={before row={
+			\caption{Performance results of some approaches.}
+			\label{tab:comparison}\\
+			\hline},
+		after row=\hline},
+	every last row/.style={after row=\hline},
+	]{../data/comparison.csv}
+	\newpage
+	\paragraph{} where,
+	\begin{itemize}
+		\item{None-0}: there is no parallelism involved
+		\item{OpenMP-$x$} OpenMP parallelism is used with $x$ threads
+		\item{SIMD-0}: CPU SIMD is used
+		\item{OpenMP-SIMD-$x$}: CPU SIMD is used in combination of OpenMP parallelism with $x$ threads
+		\item{OpenCL-$x$}: OpenCL is used with $x$ as the local work size
+	\end{itemize}
+	\begin{figure}[!ht]
+		\includegraphics [width=\linewidth] {../data/comparison.png}
+		\caption{Performance comparison of some approaches.}
+		\label{fig:comparison}
+	\end{figure}
+	\paragraph{} Figure \ref{fig:comparison} shows that peak performance of GPU OpenCL outperforms that on CPU by more than 50 times. This is because GPUs have higher throughput for similar instructions but on large data. Next best is CPU SIMD with OpenMP parallelism. This is better than the 3rd best OpenMP by more than 2 times. This is because SIMD loads data in registers and is combined with OpenMP that performs better with more number of threads. SIMD with OpenMP performs 2 times as fast as CPU level SIMD by exploiting the thread level parallelism. SIMD performs 2 times as fast as OpenMP-1 or no-parallelism by loading data in registers. OpenMP-1 or None-0 are the least performing approaches and are negligible compared to peak performance of GPU. This is because OpenMP with one thread is as good as no parallelism included which will have less throughput for large data even when executing the same set of instructions. The performance results are further explained in the later part of the report.
+	
+	\paragraph{Overall Performance Results}
+	\paragraph{} Different approaches were used to conduct the experiment and the performances, computed as giga-multiplication operations per second, are shown in table \ref{tab:overall}.
+	\pgfplotstabletypeset[
+	col sep=comma,
+	string type,
+	columns/Approach/.style={column name=Approach, column type={|c|}},
+	columns/Performance/.style={column name=Performance (Giga-Mults/Sec), column type={c|}},
+	every head row/.style={before row={
+			\caption{Performance results of various approaches.}
+			\label{tab:overall}\\
+			\hline},
+		after row=\hline},
+	every last row/.style={after row=\hline},
+	]{../data/overall-comparison.csv}
+	\begin{figure}[!ht]
+		\includegraphics [width=\linewidth] {../data/overall-comparison.png}
+		\caption{Performance comparison of various approaches.}
+		\label{fig:overall}
+	\end{figure}
+	\paragraph{} Figure \ref{fig:overall} better explains the trends showed in table \ref{tab:overall} with the help of bar charts. All the bars are drawn in the same order as in the table. A quick look would suggest that performance of GPU OpenCL outperforms that of CPU. A better explanation is given in later parts of the report.
+	
+	\paragraph{OpenMP}
+	\paragraph{} It can be observed that performance of no parallelism or 1 thread OpenMP parallelism is negligible compared to peak performance of GPU level parallelism. As the number of threads increase, OpenMP tends to perform better and becomes stable around 64 threads. This is because more the number of threads, better is the throughput of a process. Beyond 64, the performance fluctuates but remains near the peak value without improving more than that of 64. A major reason for this could be more number of in-out operations and so the performance deterioration or stability.
+	
+	\newpage
+	
+	\paragraph{SIMD / OpenMP-SIMD}
+	\paragraph{} CPU SIMD performs better than or comparable to 2 thread OpenMP parallelism because now the operations are performed in CPU registers. This alongwith OpenMP with more than 1 thread performed considerably better showing the point mentioned about throughput, i.e., more the number of threads better is the throughput. There is no performance gain by adding OpenMP 1 thread because there cannot be additional throughput involved. But, because of similar reason as explained for OpenMP, the performance fluctuated after reaching the peak performance at 64 thread OpenMP and SIMD.
+	
+	\paragraph{OpenCL}
+	\paragraph{} The immediate observation from the table \ref{tab:overall} would be that OpenCL with 1 local work size performs twice as better as the peak performance of OpenMP-SIMD-$x$ approach. An increase in the local work size gradually increases the performance and becomes stable when local work size is 64. Beyond that, the performance simply fluctuates because GPUs do not perform better after a certain occupancy.
+	
+	\paragraph{Code}
+	\paragraph{} Please unzip the file and run $./start.sh$ in the project folder to see the results and also populate the report.
+	\paragraph{} Also, all the other details on structure of the code can be found in \textit{README.md} in the project folder.
+	
+	\paragraph{NOTE:}
+	\begin{itemize}
+		\item Exact thread or local work size numbers change with different runs based on the amount of load on CPU and GPU.
+		\item All figures and tables are also available separately in $data$ folder for better view of the results.
+	\end{itemize}
+\end{document}
